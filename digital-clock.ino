@@ -57,11 +57,10 @@ void setup() {
   // initialize the pushbutton pin as an input:
   pinMode(button_pin_mins, INPUT);
   pinMode(button_pin_hrs, INPUT);
-  
 }
 
 void loop() {
-  
+
   state_mins = digitalRead(button_pin_mins);
   state_hrs = digitalRead(button_pin_hrs);
   state_save = digitalRead(button_pin_save);
