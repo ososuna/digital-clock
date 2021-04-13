@@ -8,9 +8,9 @@
 
  */
 
-// include the library code:
+// include the library code
 #include <LiquidCrystal.h>
-#include<TimerOne.h>
+#include <TimerOne.h>
 
 int segs_0 = 0;
 int segs_1 = 0;
