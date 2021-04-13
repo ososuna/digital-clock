@@ -35,8 +35,8 @@ LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
 void setup() {
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
-  Timer1.initialize(1000000); // Configura el TIMER en 1 Segundo
-  Timer1.attachInterrupt(Temporizador) ; // Configura la interrupción del Timer 1
+  Timer1.initialize(1000000); // Configures TIMER en 1 second
+  Timer1.attachInterrupt(Temporizador) ; // Configures the Timer 1 inerruption
   lcd.setCursor(5, 0);
   lcd.print(':');
   lcd.setCursor(2, 0);
@@ -53,11 +53,14 @@ void setup() {
   lcd.print(alarm_hrs_1);
   lcd.setCursor(6, 1);
   lcd.print("Alarma");
+  // When the minutes button is pressed (debouncing)
   attachInterrupt(digitalPinToInterrupt(button_pin_mins),pin2ExtInterruptHandler,FALLING);
+  // When the hours button is pressed (debouncing)
   attachInterrupt(digitalPinToInterrupt(button_pin_hrs),pin3ExtInterruptHandler,FALLING);
 }
 
 void loop() {
+  // When the save button is pressed
   state_save = digitalRead(button_pin_save);
   if(state_save == HIGH && prev_state_save == LOW) {
     if(save) {
@@ -68,15 +71,16 @@ void loop() {
       save = false;
     }
   }
+  // Debouncing
   prev_state_save = state_save;
 }
 
-//Función de la Interrupción cuando se ejecuta el TIMER
+// Interrupt function when timer is executed
 void Temporizador(void)
 {
-  //Incrementa el timer
+  // Timer increments
   segs_0++;
-  //Resetea el contador cuando llega a 1000 segundos
+  // Reset the counter when gets to 1000 seconds
   if(segs_0>9){
     segs_0=0;
     segs_1++;
@@ -108,7 +112,7 @@ void Temporizador(void)
     hrs_1=0;
   }
   
-  //Muestra en el LCD el valor actual del temporizador
+  // Shows in LCD display the actual value of the timer
   lcd.setCursor(7, 0);
   lcd.print(segs_0);
   lcd.setCursor(6, 0);
@@ -123,19 +127,17 @@ void Temporizador(void)
   lcd.print(hrs_1);
 }
 
+// Function executed when the minutes button is pressed
 void pin2ExtInterruptHandler(){
   sum_minutes();
 }
 
+// Function executed when the hours button is pressed
 void pin3ExtInterruptHandler(){
   sum_hours();
 }
 
-void pin5ExtInterruptHandler(){
-  Serial.print("true");
-  save_button();
-}
-
+// Function that increments the minutes counter
 void sum_minutes() {
   save = true;
   lcd.setCursor(6, 1);
@@ -156,6 +158,7 @@ void sum_minutes() {
   lcd.print(alarm_mins_1);
 }
 
+// Function that increments the hours counter
 void sum_hours(){
   save = true;
   lcd.setCursor(6, 1);
@@ -180,15 +183,4 @@ void sum_hours(){
   lcd.print(alarm_hrs_0);
   lcd.setCursor(0, 1);
   lcd.print(alarm_hrs_1);
-}
-
-void save_button() {
-  Serial.print(save);
-  if(save) {
-    lcd.setCursor(12, 1);
-    lcd.print(" ");
-    lcd.setCursor(6, 1);
-    lcd.print("Alarma");
-    save = false;
-  }
 }
