@@ -26,7 +26,7 @@ int alarm_hrs_1 = 0;
 const int button_pin_mins = 2;
 const int button_pin_hrs = 3;
 const int button_pin_save = 4;
-bool state_mins, prev_state_mins, state_hrs, prev_state_hrs, state_save, prev_state_save;
+bool state_save, prev_state_save;
 bool save = false;
 
 // initialize the library with the numbers of the interface pins
@@ -53,64 +53,12 @@ void setup() {
   lcd.print(alarm_hrs_1);
   lcd.setCursor(6, 1);
   lcd.print("Alarma");
-
-  // initialize the pushbutton pin as an input:
-  pinMode(button_pin_mins, INPUT);
-  pinMode(button_pin_hrs, INPUT);
+  attachInterrupt(digitalPinToInterrupt(button_pin_mins),pin2ExtInterruptHandler,FALLING);
+  attachInterrupt(digitalPinToInterrupt(button_pin_hrs),pin3ExtInterruptHandler,FALLING);
 }
 
 void loop() {
-
-  state_mins = digitalRead(button_pin_mins);
-  state_hrs = digitalRead(button_pin_hrs);
   state_save = digitalRead(button_pin_save);
-
-  if ((state_mins == HIGH && prev_state_mins == LOW) || (state_hrs == HIGH && prev_state_hrs == LOW)) {
-    save = true;
-    lcd.setCursor(6, 1);
-    lcd.print("Guardar"); 
-  }
-  
-  if (state_mins == HIGH && prev_state_mins == LOW){
-    if (alarm_mins_0 > 8) {
-      alarm_mins_0 = 0;
-      if (alarm_mins_1 > 4) {
-        alarm_mins_1 = 0;
-      } else {
-        alarm_mins_1++;
-      }
-    } else {
-      alarm_mins_0++;
-    }
-    lcd.setCursor(4, 1);
-    lcd.print(alarm_mins_0);
-    lcd.setCursor(3, 1);
-    lcd.print(alarm_mins_1);
-  }
-
-  if (state_hrs == HIGH && prev_state_hrs == LOW){
-    if (alarm_hrs_0 > 8) {
-      alarm_hrs_0 = 0;
-      if (alarm_hrs_1 > 1) {
-        alarm_hrs_1 = 0;
-      } else {
-        alarm_hrs_1++;
-      }      
-    } else {
-      alarm_hrs_0++;
-      if (alarm_hrs_1 > 1) {
-        if (alarm_hrs_0 > 3) {
-          alarm_hrs_0 = 0;
-          alarm_hrs_1 = 0;
-        }
-      }
-    }
-    lcd.setCursor(1, 1);
-    lcd.print(alarm_hrs_0);
-    lcd.setCursor(0, 1);
-    lcd.print(alarm_hrs_1);
-  }
-
   if(state_save == HIGH && prev_state_save == LOW) {
     if(save) {
       lcd.setCursor(12, 1);
@@ -120,11 +68,7 @@ void loop() {
       save = false;
     }
   }
-
-  prev_state_mins = state_mins;
-  prev_state_hrs = state_hrs;
   prev_state_save = state_save;
-  
 }
 
 //Función de la Interrupción cuando se ejecuta el TIMER
@@ -177,4 +121,74 @@ void Temporizador(void)
   lcd.print(hrs_0);
   lcd.setCursor(0, 0);
   lcd.print(hrs_1);
+}
+
+void pin2ExtInterruptHandler(){
+  sum_minutes();
+}
+
+void pin3ExtInterruptHandler(){
+  sum_hours();
+}
+
+void pin5ExtInterruptHandler(){
+  Serial.print("true");
+  save_button();
+}
+
+void sum_minutes() {
+  save = true;
+  lcd.setCursor(6, 1);
+  lcd.print("Guardar");
+  if (alarm_mins_0 > 8) {
+    alarm_mins_0 = 0;
+    if (alarm_mins_1 > 4) {
+      alarm_mins_1 = 0;
+    } else {
+      alarm_mins_1++;
+    }
+  } else {
+    alarm_mins_0++;
+  }
+  lcd.setCursor(4, 1);
+  lcd.print(alarm_mins_0);
+  lcd.setCursor(3, 1);
+  lcd.print(alarm_mins_1);
+}
+
+void sum_hours(){
+  save = true;
+  lcd.setCursor(6, 1);
+  lcd.print("Guardar");
+  if (alarm_hrs_0 > 8) {
+    alarm_hrs_0 = 0;
+    if (alarm_hrs_1 > 1) {
+      alarm_hrs_1 = 0;
+    } else {
+    alarm_hrs_1++;
+    }      
+  } else {
+    alarm_hrs_0++;
+    if (alarm_hrs_1 > 1) {
+      if (alarm_hrs_0 > 3) {
+        alarm_hrs_0 = 0;
+        alarm_hrs_1 = 0;
+      }
+    }
+  }
+  lcd.setCursor(1, 1);
+  lcd.print(alarm_hrs_0);
+  lcd.setCursor(0, 1);
+  lcd.print(alarm_hrs_1);
+}
+
+void save_button() {
+  Serial.print(save);
+  if(save) {
+    lcd.setCursor(12, 1);
+    lcd.print(" ");
+    lcd.setCursor(6, 1);
+    lcd.print("Alarma");
+    save = false;
+  }
 }
