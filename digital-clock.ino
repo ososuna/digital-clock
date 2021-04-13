@@ -91,6 +91,7 @@ void loop() {
   }
   // Debouncing
   prev_state_save = state_save;
+
 }
 
 // Interrupt function when timer is executed
@@ -129,6 +130,13 @@ void Temporizador(void)
     clock.hrs_0=0;
     clock.hrs_1=0;
   }
+
+  if ( (clock.hrs_0 == alarm.hrs_0) && (clock.hrs_1 == alarm.hrs_1) &&
+          (clock.mins_0 >= alarm.mins_0) && (clock.mins_1 == alarm.mins_1) )
+  {
+    tone(13, 294, 500);
+  }
+  
   
   // Shows in LCD display the actual value of the timer
   lcd.setCursor(7, 0);
