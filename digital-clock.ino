@@ -87,6 +87,10 @@ void loop() {
       lcd.setCursor(6, 1);
       lcd.print("Alarma");
       save = false;
+      EEPROM.update(3, alarm.mins_0);
+      EEPROM.update(2, alarm.mins_1);
+      EEPROM.update(1, alarm.hrs_0);
+      EEPROM.update(0, alarm.hrs_1);
     }
   }
   // Debouncing
@@ -178,12 +182,12 @@ void sum_minutes() {
   } else {
     alarm.mins_0++;
   }
-  EEPROM.update(3, alarm.mins_0);
-  EEPROM.update(2, alarm.mins_1);
+  // EEPROM.update(3, alarm.mins_0);
+  // EEPROM.update(2, alarm.mins_1);
   lcd.setCursor(4, 1);
-  lcd.print(EEPROM.read(3));
+  lcd.print(alarm.mins_0);
   lcd.setCursor(3, 1);
-  lcd.print(EEPROM.read(2));
+  lcd.print(alarm.mins_1);
 }
 
 // Function that increments the hours counter in the alarm
@@ -207,10 +211,10 @@ void sum_hours(){
       }
     }
   }
-  EEPROM.update(1, alarm.hrs_0);
-  EEPROM.update(0, alarm.hrs_1);
+  // EEPROM.update(1, alarm.hrs_0);
+  // EEPROM.update(0, alarm.hrs_1);
   lcd.setCursor(1, 1);
-  lcd.print(EEPROM.read(1));
+  lcd.print(alarm.hrs_0);
   lcd.setCursor(0, 1);
-  lcd.print(EEPROM.read(0));
+  lcd.print(alarm.hrs_1);
 }
