@@ -34,6 +34,8 @@ const int button_pin_hrs = 3;
 const int button_pin_save = 4;
 bool state_save, prev_state_save;
 bool save = false;
+bool sounding = false;
+bool can_sound = true;
 
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
@@ -81,21 +83,26 @@ void loop() {
   // When the save button is pressed
   state_save = digitalRead(button_pin_save);
   if(state_save == HIGH && prev_state_save == LOW) {
-    if(save) {
-      lcd.setCursor(12, 1);
-      lcd.print(" ");
-      lcd.setCursor(6, 1);
-      lcd.print("Alarma");
-      save = false;
-      EEPROM.update(3, alarm.mins_0);
-      EEPROM.update(2, alarm.mins_1);
-      EEPROM.update(1, alarm.hrs_0);
-      EEPROM.update(0, alarm.hrs_1);
+    if (sounding) {
+      can_sound = false;
+      sounding = false;
+    } else {
+      if(save) {
+        can_sound = true;
+        lcd.setCursor(12, 1);
+        lcd.print(" ");
+        lcd.setCursor(6, 1);
+        lcd.print("Alarma");
+        save = false;
+        EEPROM.update(3, alarm.mins_0);
+        EEPROM.update(2, alarm.mins_1);
+        EEPROM.update(1, alarm.hrs_0);
+        EEPROM.update(0, alarm.hrs_1);
+      }
     }
   }
   // Debouncing
   prev_state_save = state_save;
-
 }
 
 // Interrupt function when timer is executed
@@ -136,11 +143,13 @@ void Temporizador(void)
   }
 
   if ( (clock.hrs_0 == alarm.hrs_0) && (clock.hrs_1 == alarm.hrs_1) &&
-          (clock.mins_0 >= alarm.mins_0) && (clock.mins_1 == alarm.mins_1) )
+          (clock.mins_0 >= alarm.mins_0) && (clock.mins_1 == alarm.mins_1) &&  (!save) )
   {
-    tone(13, 294, 500);
+    if (can_sound) {
+      sounding = true;
+      tone(13, 294, 500);
+    }
   }
-  
   
   // Shows in LCD display the actual value of the timer
   lcd.setCursor(7, 0);
@@ -169,52 +178,59 @@ void pin3ExtInterruptHandler(){
 
 // Function that increments the minutes counter in the alarm
 void sum_minutes() {
-  save = true;
-  lcd.setCursor(6, 1);
-  lcd.print("Guardar");
-  if (alarm.mins_0 > 8) {
-    alarm.mins_0 = 0;
-    if (alarm.mins_1 > 4) {
-      alarm.mins_1 = 0;
-    } else {
-      alarm.mins_1++;
-    }
+  if (sounding) {
+    can_sound = false;
+    sounding = false;
   } else {
-    alarm.mins_0++;
+    save = true;
+    lcd.setCursor(6, 1);
+    lcd.print("Guardar");
+    if (alarm.mins_0 > 8) {
+      alarm.mins_0 = 0;
+      if (alarm.mins_1 > 4) {
+        alarm.mins_1 = 0;
+      } else {
+        alarm.mins_1++;
+      }
+    } else {
+      alarm.mins_0++;
+    }
+    lcd.setCursor(4, 1);
+    lcd.print(alarm.mins_0);
+    lcd.setCursor(3, 1);
+    lcd.print(alarm.mins_1);
   }
-  // EEPROM.update(3, alarm.mins_0);
-  // EEPROM.update(2, alarm.mins_1);
-  lcd.setCursor(4, 1);
-  lcd.print(alarm.mins_0);
-  lcd.setCursor(3, 1);
-  lcd.print(alarm.mins_1);
 }
 
 // Function that increments the hours counter in the alarm
 void sum_hours(){
-  save = true;
-  lcd.setCursor(6, 1);
-  lcd.print("Guardar");
-  if (alarm.hrs_0 > 8) {
-    alarm.hrs_0 = 0;
-    if (alarm.hrs_1 > 1) {
-      alarm.hrs_1 = 0;
-    } else {
-    alarm.hrs_1++;
-    }      
+  if (sounding) {
+    can_sound = false;
+    sounding = false;
   } else {
-    alarm.hrs_0++;
-    if (alarm.hrs_1 > 1) {
-      if (alarm.hrs_0 > 3) {
-        alarm.hrs_0 = 0;
+    save = true;
+    lcd.setCursor(6, 1);
+    lcd.print("Guardar");
+    if (alarm.hrs_0 > 8) {
+      alarm.hrs_0 = 0;
+      if (alarm.hrs_1 > 1) {
         alarm.hrs_1 = 0;
+      } else {
+      alarm.hrs_1++;
+      }      
+    } else {
+      alarm.hrs_0++;
+      if (alarm.hrs_1 > 1) {
+        if (alarm.hrs_0 > 3) {
+          alarm.hrs_0 = 0;
+          alarm.hrs_1 = 0;
+        }
       }
     }
+    lcd.setCursor(1, 1);
+    lcd.print(alarm.hrs_0);
+    lcd.setCursor(0, 1);
+    lcd.print(alarm.hrs_1);
   }
-  // EEPROM.update(1, alarm.hrs_0);
-  // EEPROM.update(0, alarm.hrs_1);
-  lcd.setCursor(1, 1);
-  lcd.print(alarm.hrs_0);
-  lcd.setCursor(0, 1);
-  lcd.print(alarm.hrs_1);
+    
 }
