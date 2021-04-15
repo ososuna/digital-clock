@@ -62,13 +62,13 @@ void setup() {
   lcd.setCursor(2, 1);
   lcd.print(':');
   lcd.setCursor(4, 1);
-  lcd.print(EEPROM.read(3));
+  lcd.print(alarm.mins_0);
   lcd.setCursor(3, 1);
-  lcd.print(EEPROM.read(2));
+  lcd.print(alarm.mins_1);
   lcd.setCursor(1, 1);
-  lcd.print(EEPROM.read(1));
+  lcd.print(alarm.hrs_0);
   lcd.setCursor(0, 1);
-  lcd.print(EEPROM.read(0));
+  lcd.print(alarm.hrs_1);
   lcd.setCursor(6, 1);
   lcd.print("Alarma");
   // When the minutes button is pressed (debouncing)
