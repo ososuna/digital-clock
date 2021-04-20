@@ -1,3 +1,5 @@
+
+
 /*
   Digital Clock
 
@@ -12,6 +14,11 @@
 #include <LiquidCrystal.h>
 #include <TimerOne.h>
 #include <EEPROM.h>
+#include <Adafruit_Sensor.h>
+#include <DHT_U.h>
+#include <DHT.h>
+
+#define DHTTYPE DHT11
 
 struct Clock {
   int segs_0 = 0;
@@ -32,10 +39,14 @@ struct Alarm {
 const int button_pin_mins = 2;
 const int button_pin_hrs = 3;
 const int button_pin_save = 4;
+const int DHTPin = 5; 
 bool state_save, prev_state_save;
 bool save = false;
 bool sounding = false;
 bool can_sound = true;
+float temp;
+
+DHT dht(DHTPin, DHTTYPE);
 
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
@@ -53,7 +64,7 @@ void setup() {
   alarm.hrs_0 = EEPROM.read(1);
   alarm.hrs_1 = EEPROM.read(0);
   
-  // set up the LCD's number of columns and rows:
+  // Set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
   Timer1.initialize(1000000); // Configures TIMER en 1 second
   Timer1.attachInterrupt(Temporizador) ; // Configures the Timer 1 inerruption
@@ -77,6 +88,14 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(button_pin_mins),pin2ExtInterruptHandler,FALLING);
   // When the hours button is pressed (debouncing)
   attachInterrupt(digitalPinToInterrupt(button_pin_hrs),pin3ExtInterruptHandler,FALLING);
+
+  // Begin DHT11
+  dht.begin();
+  temp = dht.readTemperature();
+  lcd.setCursor(10, 0);
+  lcd.print("T:");
+  lcd.setCursor(12, 0);
+  lcd.print(temp);
 }
 
 void loop() {
@@ -103,11 +122,25 @@ void loop() {
   }
   // Debouncing
   prev_state_save = state_save;
+
+  /* Measure temperature and humidity.  If the functions returns
+    true, then a measurement is available. */
+  if( measure_environment(&temp) == true ) {
+      // Shows in LCD display the actual value of the temperature
+      lcd.setCursor(10, 0);
+      lcd.print("T:");
+      lcd.setCursor(12, 0);
+      lcd.print(temp);
+  }
+
 }
 
 // Interrupt function when timer is executed
 void Temporizador(void)
 {
+  // Reads temperature
+  // temp = dht.readTemperature();
+  
   // Timer increments
   clock.segs_0++;
   // Reset the counter when gets to 1000 seconds
@@ -164,6 +197,7 @@ void Temporizador(void)
   lcd.print(clock.hrs_0);
   lcd.setCursor(0, 0);
   lcd.print(clock.hrs_1);
+
 }
 
 // Function executed when the minutes button is pressed
@@ -233,4 +267,25 @@ void sum_hours(){
     lcd.print(alarm.hrs_1);
   }
     
+}
+
+/*
+ * Poll for a measurement, keeping the state machine alive.  Returns
+ * true if a measurement is available.
+ */
+static bool measure_environment(float *temperature) {
+  
+  static unsigned long measurement_timestamp = millis( );
+
+  /* Measure once every four seconds. */
+  if( millis( ) - measurement_timestamp > 3000ul ) {
+    if( !isnan(temp) )
+    {
+      measurement_timestamp = millis( );
+      temp = dht.readTemperature();
+      return( true );
+    }
+  }
+  return( false );
+
 }
