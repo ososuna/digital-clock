@@ -59,10 +59,13 @@ Alarm alarm;
 
 void setup() {
   // Read the alarm attributes from EEPROM
-  alarm.mins_0 = EEPROM.read(3);
-  alarm.mins_1 = EEPROM.read(2);
-  alarm.hrs_0 = EEPROM.read(1);
-  alarm.hrs_1 = EEPROM.read(0);
+  if ( !(EEPROM.read(3) == 255 || EEPROM.read(2) == 255 || EEPROM.read(1) == 255 || EEPROM.read(0) == 255) )
+  {
+    alarm.mins_0 = EEPROM.read(3);
+    alarm.mins_1 = EEPROM.read(2);
+    alarm.hrs_0 = EEPROM.read(1);
+    alarm.hrs_1 = EEPROM.read(0);
+  }
   
   // Set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
@@ -138,8 +141,6 @@ void loop() {
 // Interrupt function when timer is executed
 void Temporizador(void)
 {
-  // Reads temperature
-  // temp = dht.readTemperature();
   
   // Timer increments
   clock.segs_0++;
